@@ -1,4 +1,4 @@
-import express, { json, Request, Response } from "express";
+import express, { json, Request, Response, NextFunction } from "express";
 import "reflect-metadata";
 import { createConnection, Connection, Not, In } from "typeorm";
 import { Contact } from "./entity/Contact";
@@ -141,11 +141,18 @@ const updateSecondaries = async (connection: Connection, contacts: Contact[]) =>
   return contacts;
 }
 
+
 createConnection()
   .then(async (connection) => {
     const app = express();
 
     app.use(json());
+
+    app.use(function(err: Error, req: Request, res: Response, next: NextFunction) {
+      if (!err) return next(); // you also need this line
+      console.log("error!!!");
+      res.send("error!!!");
+    });
 
     app.post(
       "/identify",
@@ -188,7 +195,7 @@ createConnection()
     );
 
     app.listen(process.env.PORT, () => {
-      console.log("API is running");
+      console.log("API is running", process.env.PORT);
     });
   })
   .catch((error) => console.log(error));
