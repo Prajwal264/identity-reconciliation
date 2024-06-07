@@ -12,6 +12,7 @@ import { Entity, PrimaryGeneratedColumn, Column, Index } from "typeorm";
  * 
  */
 @Entity()
+/* Wouldn't choose to add these many indexes ideally, but anyway */
 @Index("emailIndex", ["email", "linkPrecedence", "createdAt"], { sparse: true })
 @Index("phoneNumberIndex", ["phoneNumber", "linkPrecedence", "createdAt"], { sparse: true })
 export class Contact {
