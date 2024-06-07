@@ -119,6 +119,28 @@ const checkIfPayloadHasNewInfo = (payload: IIdentityReconciliationRequest, conta
   return hasNewInfo
 }
 
+const updateSecondaries = async (connection: Connection, contacts: Contact[]) => {
+  // take the oldest one as primary and set others as secondary
+  contacts.sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
+  if (contacts[0].linkPrecedence !== 'primary') {
+    contacts[0].linkedId = null;
+    contacts[0].linkPrecedence = 'primary';
+  }
+  for (let i = 1; i < contacts.length; i++) {
+    let contact = contacts[i];
+    if (contact.linkPrecedence !== 'secondary') {
+      contact.linkedId = contacts[0].id;
+      contact.linkPrecedence = 'secondary';
+      await connection.createQueryBuilder()
+        .update(Contact)
+        .set(contact)
+        .where({ id: contact.id })
+        .execute();
+    }
+  }
+  return contacts;
+}
+
 createConnection()
   .then(async (connection) => {
     const app = express();
@@ -133,7 +155,7 @@ createConnection()
       ): Promise<void> => {
         const payload = req.body as IIdentityReconciliationRequest;
         // Check if we can find any data with the email | phone number
-        const contacts = await findContacts(connection, payload);
+        let contacts = await findContacts(connection, payload);
         // if we don't find the contacts we will create one
         if (!payload.email || !payload.phoneNumber) {
           const consolidatedContact = consolidateContactResponse(contacts);
@@ -157,24 +179,7 @@ createConnection()
             const contact = await createContact(connection, payload, 'secondary', contacts[0].id);
             contacts.push(contact);
           } else {
-            // take the oldest one as primary and set others as secondary
-            contacts.sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
-            let index = 0;
-            for (let contact of contacts) {
-              if (!index) {
-                contact.linkedId = null;
-                contact.linkPrecedence = 'primary';
-              } else {
-                contact.linkedId = contacts[0].id;
-                contact.linkPrecedence = 'secondary';
-              }
-              await connection.createQueryBuilder()
-                .update(Contact)
-                .set(contact)
-                .where({ id: contact.id })
-                .execute();
-              index++;
-            }
+            contacts = await updateSecondaries(connection, contacts)
           }
         }
         const consolidatedContact = consolidateContactResponse(contacts);
