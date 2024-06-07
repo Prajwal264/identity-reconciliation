@@ -23,3 +23,4 @@ To keep things simple [SQLite](https://www.sqlite.org/) is used as a database. A
 - If you want to transpile manually and run the transpiled code yourself (for example with `node build/index.js`) you'll have to provide database configuration otherwise, since the default conifugration points to the directory containing the `TypeScript` files for entities. See [the TypeORM docs](https://typeorm.io/#/connection-options) for more information.
 - If `synchronize: true` is set in the TypeORM connection settings the database schema is automatically updated from the entities TypeORM found. More info is found in the [TypeORM docs](https://typeorm.io/#/connection-options).
 - You can enable schema and query logging in the connection settings. See [the TypeORM docs](https://typeorm.io/#/connection-options) for more information.# identity-reconciliation
+# identity-reconciliation
