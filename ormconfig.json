@@ -1,6 +1,10 @@
 {
-   "type": "sqlite",
-   "database": "./dev.db",
+   "type": "mysql",
+   "username": "sql12712452",
+   "password": "Grq9TS8Y9X",
+   "database": "sql12712452",
+   "host": "sql12.freesqldatabase.com",
+   "port": 3306,
    "synchronize": true,
    "logging": false,
    "entities": [
