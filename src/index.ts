@@ -100,7 +100,7 @@ const consolidateContactResponse = (contacts: Contact[]) => {
   return consolidatedResponse;
 }
 
-const doesContactExist = (payload: IIdentityReconciliationRequest, contacts: Contact[]): Contact | undefined => {
+const doesExactContactExist = (payload: IIdentityReconciliationRequest, contacts: Contact[]): Contact | undefined => {
   return contacts.find((contact) => contact.phoneNumber === payload.phoneNumber && contact.email === payload.email);
 }
 
@@ -171,7 +171,7 @@ createConnection()
           return;
         }
         // contact already exist
-        const exactContact = doesContactExist(payload, contacts);
+        const exactContact = doesExactContactExist(payload, contacts);
         if (!exactContact) {
           // check if the new record is having new information
           const hasNewInfo = checkIfPayloadHasNewInfo(payload, contacts);
