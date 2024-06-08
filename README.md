@@ -102,7 +102,7 @@ If a new contact links two existing contacts, one of them will become a `seconda
 
 ## Deployment
 
-The application is hosted online, and the endpoint can be accessed at: `[Your deployed endpoint URL]`
+The application is hosted online, and the endpoint can be accessed at: `https://identity-reconciliation-wjcz.onrender.com/identify` [POST Request]
 
 ## How to Run
 
