@@ -1,26 +1,112 @@
-# Starter projekt with Express and Typeorm
+# Identity Reconciliation
 
-This serves as a base for small projects with Express.js and TypeOrm.
+## Introduction
 
-# Getting started
+This project aims to solve the challenge of identity reconciliation for customers making purchases with different contact information on an e-commerce platform. The platform can identify and track customer identities across multiple purchases, even if different emails and phone numbers are used.
 
-This is a small project where some things are already set up to get you started. To use it, clone this repo, install [NodeJS](https://nodejs.org/en/) and run `npm install` in the project directory. This will install all dependencies and you can start.
+## Features
 
-The project is written in [TypeScript](http://typescriptlang.org/) which transpiles to JavaScript in the `build` directory. To build it the command `npm run build` can be used.
+- Identify and consolidate customer contact information.
+- Link multiple contacts to a primary contact.
+- Ensure a personalized customer experience by tracking loyal customers.
 
-For a quick development server you can run `npm run start`. Once the server is started it can be accessed at `http://localhost:3000`.
+## Database Schema
 
-# Used Frameworks and Libraries
+The contact information is stored in a relational database table named `Contact`:
 
-The web server uses [Express.js](https://expressjs.com/) which is based on middlewares. A json middleware is included and already set up so the API can send and receive JSON responses and requests.
+```sql
+{
+    id Int,
+    phoneNumber String?,
+    email String?,
+    linkedId Int?, // the ID of another Contact linked to this one
+    linkPrecedence "secondary" | "primary", // "primary" if it's the first Contact
+    createdAt DateTime,
+    updatedAt DateTime,
+    deletedAt DateTime?
+}
+```
 
-To keep things simple [SQLite](https://www.sqlite.org/) is used as a database. As ORM [TypeORM](https://typeorm.io/) which plays nicely with `TypeScript`.
+## Endpoint
 
-# Tips
+### `/identify`
 
-- With `npm run start` [TS Node](https://github.com/TypeStrong/ts-node) is used to directly run the code. Normally you would have to transpile it first (you can do so with `npm run build`) but `TS-Node` will transpile files on the fly. 
-- Database configuration is done in `ormconfig.json` and when you run the server with `TS Node` it will automatically be picked up and used for connection. You can also manually configure the connection directly in the code.
-- If you want to transpile manually and run the transpiled code yourself (for example with `node build/index.js`) you'll have to provide database configuration otherwise, since the default conifugration points to the directory containing the `TypeScript` files for entities. See [the TypeORM docs](https://typeorm.io/#/connection-options) for more information.
-- If `synchronize: true` is set in the TypeORM connection settings the database schema is automatically updated from the entities TypeORM found. More info is found in the [TypeORM docs](https://typeorm.io/#/connection-options).
-- You can enable schema and query logging in the connection settings. See [the TypeORM docs](https://typeorm.io/#/connection-options) for more information.# identity-reconciliation
-# identity-reconciliation
+#### Request
+
+The `/identify` endpoint receives HTTP POST requests with a JSON body containing either or both of the following fields:
+
+```json
+{
+    "email": "string",
+    "phoneNumber": "number"
+}
+```
+
+#### Response
+
+The endpoint returns an HTTP 200 response with a JSON payload containing the consolidated contact information:
+
+```json
+{
+    "contact": {
+        "primaryContactId": "number",
+        "emails": ["string"], // first element being email of primary contact
+        "phoneNumbers": ["string"], // first element being phoneNumber of primary contact
+        "secondaryContactIds": ["number"] // Array of all Contact IDs that are "secondary"
+    }
+}
+```
+
+## Examples
+
+### Request
+
+```json
+{
+    "email": "mcfly@hillvalley.edu",
+    "phoneNumber": "123456"
+}
+```
+
+### Response
+
+```json
+{
+    "contact": {
+        "primaryContactId": 1,
+        "emails": ["lorraine@hillvalley.edu", "mcfly@hillvalley.edu"],
+        "phoneNumbers": ["123456"],
+        "secondaryContactIds": [23]
+    }
+}
+```
+
+## Usage Scenarios
+
+### Scenario 1: No Existing Contacts
+
+If there are no existing contacts matching the incoming request, a new `Contact` row is created with `linkPrecedence="primary"`.
+
+### Scenario 2: Existing Contact with New Information
+
+If an incoming request has either a phone number or email common to an existing contact but contains new information, a new `secondary` Contact row is created and linked to the primary contact.
+
+### Scenario 3: Turning Primary Contacts into Secondary
+
+If a new contact links two existing contacts, one of them will become a `secondary` contact. The database will update accordingly.
+
+## Technology Stack
+
+- **Database**: My SQL
+- **Backend Framework**: Node.js with TypeScript
+
+## Deployment
+
+The application is hosted online, and the endpoint can be accessed at: `[Your deployed endpoint URL]`
+
+## How to Run
+
+1. Clone the repository from GitHub.
+2. Install dependencies using `npm install`.
+3. Set up your database and configure the connection settings.
+4. Run the application using `npm start`.
